@@ -1,0 +1,5 @@
+A thread is an independent unit of execution that has its own stack and set of registers (e.g., PC)
+
+you are required to develop a user-level thread library, libuthread.a, as a form of
+Linux static library.
+

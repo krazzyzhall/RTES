@@ -1,0 +1,16 @@
+This is the code for Realtime thread scheduling and analysis of different RTAs 
+To generate the output file, run the following command:
+sh run.sh
+it will generate an output file called 
+Main.out
+
+The program takes in parameters as shown below
+ ./Main.out
+
+this will generate 18 txt files names <RTA initials>_plot<number>.
+
+example : 
+dm_plot2
+ where <number> indicates the plot number from assignment pdf.
+
+images of performed analysis are in test folder.

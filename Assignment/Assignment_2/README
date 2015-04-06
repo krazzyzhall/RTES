@@ -1,0 +1,18 @@
+This is the code for Realtime thread scheduling and analysis of how the treads are scheduled and how priorities are handled 
+To generate the output file, run the following command:
+sh run.sh
+it will generate an output file called 
+Main.out
+
+The program takes in parameters as shown below
+ ./Main.out <name of input file> <'Y' if priority inheritance needed,anything else if not>
+
+eg:
+ ./Main.out input_1.txt Y  # this will read file input_1.txt and will apply priority inheritance
+  
+Note:
+run it superuser mode or change /dev/input/mice file permissions to 666
+
+./test/ folder has the test file used by me for checking priorit inversion,priority inheritance and task overrun 
+it has trace.dat of exectution without priority inheritance.
+
