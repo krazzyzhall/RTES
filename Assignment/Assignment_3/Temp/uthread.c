@@ -2,6 +2,30 @@
 
 //#include <ucontext.h>
 /*pointer mangle function for decoding the value of a register and reassigining */
+int deleteTnode(threads *tnode){
+	threads *temp;
+	if(tnode==NULL){
+	return -1;
+	}
+	temp=tnode->prev;
+	temp->next=tnode->next;
+	tnode->next->prev=temp;
+	if(tnode->prev==NULL){
+	temp=tnode->next;
+	}
+	else if(tnode->next==NULL){
+	temp=tnode->prev;
+	}
+	free(tnode);
+	tnode=temp;		//make sure to 
+	return 1;
+}	// logic to delete Thread node.
+int add(threads *th, threads *head){
+    head->next=th;
+    th->prev=head;
+    th->next=NULL;
+    return th->prev->tid + 1;
+}
 long pointer_mangle(void* p)
 {
  long ret;
@@ -16,7 +40,7 @@ long pointer_mangle(void* p)
  );
  return ret;
 }
-threads *th;
+threads *threadList=NULL,*current=NULL;
 static int size=0;
 static int nextalloc=0;
 ucontext_t kernel_thread;
@@ -27,60 +51,55 @@ tid      : returned thread identification for the subsequent uses (e.g., uthread
  priority : valid priority range: 0 ~ 100. 0 is the highest. 0 is reserved for main()
 *****************************************************************************************/
 void kernelthread(){
-printf("hi i am kernel thread\n");
+//printf("hi i am kernel thread\n");
 return;
 }
 int uthread_create(uthread_t *tid, void *(*start)(void *), void *args, int priority){
 ucontext_t mycont;
 void *tstart=start;
+//add new Thread node
 int temptid;
-if(nextalloc==size){
-temptid=size++;	nextalloc++; //if all the spawned threads are still active
-}
-else {
-temptid=size++;	nextalloc++; //if all the spawned threads are still active
-}
-printf("before relloc %lu \n",size*sizeof(threads));
-threads *tth=malloc((size)*sizeof(threads));	// allocate the array or threads for tracking
-if(size!=0){
-memcpy(tth,th,(size-1)*sizeof(threads));//threads *tth=realloc(th,(size)*sizeof(threads));	// allocate the array or threads for tracking
+threads *th=(threads *)malloc( sizeof(threads) );	// allocating the new node for 
+if(threadList==NULL){
+threadList=th;
+current=th;
+temptid=1;
 }else{
-th=tth;}printf("ee kala kawa kaat khayega sach bol\n");
-if(tth==NULL){
-printf("ee kala kawa kaat khayega sach bol\n");
-exit(-1);
-}else{
-th=tth;
+temptid=add(th,current);				// add this new node to the thread list 
 }
-*tid=temptid;
-th[nextalloc-1].tid=temptid;
-th[nextalloc-1].th.args=args;	//for setting arguements
-th[nextalloc-1].th.priority=priority;	//setting priority.
-th[nextalloc-1].th.func_ptr=tstart;	//setting function pointer 
-th[nextalloc-1].ucp=malloc(sizeof(ucontext_t));
-if(getcontext(th[nextalloc-1].ucp)==-1){
+if(temptid==-1){
+	exit(-1);
+	}//*tid=temptid;
+th->tid=temptid;
+th->th.args=args;	//for setting arguements
+th->th.priority=priority;	//setting priority.
+th->th.func_ptr=tstart;	//setting function pointer 
+th->ucp=malloc(sizeof(ucontext_t));
+if(getcontext(th->ucp)==-1){
+//  printf("error while creating thread\n");
+  exit(-1);
+}			//get existing context
+/*if(getcontext(&kernel_thread)==-1){
+//  printf("error while creating thread\n");
+  exit(-1);
+}*/			//get existing context
+th->ucp->uc_stack.ss_sp=malloc(8192);		// allocate 8K stack
+th->ucp->uc_stack.ss_size=sizeof(th->ucp->uc_stack.ss_sp);		// save size of stack pointer
+//th->ucp->uc_link = &kernel_thread;
+th->ucp->uc_link = &mycont;
+makecontext(th->ucp,tstart,1,args);	//makes context for start function
+//printf("context made now swaping context\n");
+/*if(getcontext(&kernel_thread)==-1){
   printf("error while creating thread\n");
   exit(0);
 }			//get existing context
-if(getcontext(&kernel_thread)==-1){
-  printf("error while creating thread\n");
-  exit(0);
-}			//get existing context
-th[nextalloc-1].ucp->uc_stack.ss_sp=malloc(8192);		// allocate 8K stack
-th[nextalloc-1].ucp->uc_stack.ss_size=sizeof(th[nextalloc-1].ucp->uc_stack.ss_sp);		// save size of stack pointer
-th[nextalloc-1].ucp->uc_link = &kernel_thread;
-th[nextalloc-1].ucp->uc_link = &mycont;
-makecontext(th[nextalloc-1].ucp,tstart,1,args);	//makes context for start function
-printf("context made now swaping context\n");
-if(getcontext(&kernel_thread)==-1){
-  printf("error while creating thread\n");
-  exit(0);
-}			//get existing context
-kernel_thread.uc_stack.ss_sp=malloc(8192);		// allocate 8K stack
-kernel_thread.uc_stack.ss_size=sizeof(th[nextalloc-1].ucp->uc_stack.ss_sp);		// save size of stack pointer
-kernel_thread.uc_link = &mycont;
-makecontext(&kernel_thread,kernelthread,0);	//makes context for start function
-swapcontext(&mycont,th[nextalloc-1].ucp);
+//kernel_thread.uc_stack.ss_sp=malloc(8192);		// allocate 8K stack
+//kernel_thread.uc_stack.ss_size=sizeof(th->ucp->uc_stack.ss_sp);		// save size of stack pointer
+//kernel_thread.uc_link = &mycont;
+//makecontext(&kernel_thread,kernelthread,0);	//makes context for start function
+*/swapcontext(&mycont,th->ucp);
+printf("creating the thread was complete\n");
+return 0;
 }
 
 /********************************************************************************
@@ -88,7 +107,10 @@ swapcontext(&mycont,th[nextalloc-1].ucp);
  *value_ptr contains the passed value from uthread_exit()
 *********************************************************************************/
 int uthread_join(uthread_t tid, void **value_ptr){
+	*value_ptr=(void *)10;
+	return 0;
 }
+
 
 /************************************************************************************
  This function should be implicitly called when a thread finishes its start function

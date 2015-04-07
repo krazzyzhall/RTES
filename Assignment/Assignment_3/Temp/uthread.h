@@ -17,6 +17,8 @@ typedef struct threads{
  int tid;
  tcb th;
  ucontext_t *ucp;
+ struct threads *next;
+ struct threads *prev;
 } threads;
 /******************************************************************** 
  CSE522 Assignment 3, Arizona State University, Spring/2015
