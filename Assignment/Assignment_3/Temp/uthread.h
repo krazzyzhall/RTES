@@ -10,16 +10,10 @@ typedef struct tcb{
  int priority;
  void *args;		// args passed to the function 
  void *stack;		// storing top pointer of stack
- void *func_ptr;	// for storing address of function to be called
+ void *(*func_ptr)(void *);	// for storing address of function to be called
+ void *ret_val;
  //some other information continues
 } tcb;
-typedef struct threads{
- int tid;
- tcb th;
- ucontext_t *ucp;
- struct threads *next;
- struct threads *prev;
-} threads;
 /******************************************************************** 
  CSE522 Assignment 3, Arizona State University, Spring/2015
  This file shall NOT BE MODIFIED
@@ -27,6 +21,13 @@ typedef struct threads{
 
 typedef long int uthread_t;
 typedef long int uthread_mutex_t;
+typedef struct threads{
+ uthread_t tid;
+ tcb th;
+ ucontext_t *ucp;
+ struct threads *next;
+ struct threads *prev;
+} threads;
 
 /*
  Define resource table for stack-based priority ceiling protocol
