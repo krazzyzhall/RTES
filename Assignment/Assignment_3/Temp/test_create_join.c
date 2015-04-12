@@ -38,7 +38,7 @@ int main()
 	for(i=0; i<3; i++)
 	{
 		uthread_join(tid[i], &uthread_ret[i]);
-		printf("thread %d returned %ld\n", i, (long)uthread_ret[i]);
+		printf("thread %ld returned %ld\n", tid[i], (long)uthread_ret[i]);
 	}
 //	muntrace();
 	return 0;

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "uthread.h"
-
+//#include "uthread.c"
 typedef struct per_thread_t
 {
 	long id;
@@ -21,6 +21,8 @@ void *periodic_thread(void *arg)
 	printf("thread id: %ld, period: %ldms\n", t_arg->id, t_arg->period);
 	
 	next = t_arg->period_start;
+//	next.tv_sec=0;
+ //       next.tv_nsec=0;
 	for(i=0; i<5; i++)
 	{
 		//task body
@@ -33,10 +35,10 @@ void *periodic_thread(void *arg)
 		tmp = (next.tv_sec*1000000000 + next.tv_nsec + t_arg->period*1000000);
 		next.tv_sec = tmp/1000000000;
 		next.tv_nsec = tmp%1000000000;
-
-		uthread_abstime_nanosleep(&next);
+//		printf(" this is the tmp value :%lld \n",tmp);
+		uthread_abstime_nanosleep (&next);
 	}
-
+		printf(" after completing sleeping process\n");	
 	return (void *)0;
 }
 
@@ -47,21 +49,20 @@ int main()
 	uthread_t tid[2];
 	per_thread_t thread_arg[2];
 	struct timespec period_start;
-	
 	uthread_gettime(&period_start);
-	
+//	printf("gettime value : %ld \n",(period_start.tv_sec*1000000000)+period_start.tv_nsec);
 	thread_arg[0].id = 0;
-	thread_arg[0].period = 500;
+	thread_arg[0].period = 5000;
 	thread_arg[0].priority = 1;
 	thread_arg[0].period_start = period_start;
 	
 	thread_arg[1].id = 1;
-	thread_arg[1].period = 400;
+	thread_arg[1].period = 4000;
 	thread_arg[1].priority = 2;
 	thread_arg[1].period_start = period_start;
 
 	for(i=0; i<2; i++)
-		uthread_create(&tid[i], periodic_thread, (void *)&thread_arg[i], thread_arg[0].priority);
+		uthread_create(&tid[i], periodic_thread, (void *)&thread_arg[i], thread_arg[i].priority);
 	
 	for(i=0; i<2; i++)
 	{

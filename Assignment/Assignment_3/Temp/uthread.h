@@ -1,9 +1,25 @@
 #ifndef _UTHREAD_H_
 #define _UTHREAD_H_
 #include <ucontext.h>
+#include <unistd.h>
 #include <time.h>
+#include <string.h>
 #include<stdlib.h>
 #include<stdio.h>
+#include <signal.h>
+//#define uthread_abstime_nanosleep(x) _uthread_abstime_nanosleep((x), __func__)
+#define BLOCKED 11	// if blocked by higher priority or resource unavailability
+#define DELAYED 12
+#define READY   13
+#define EXITED  14
+#define RUNNING 15 
+/******************************************************************** 
+ CSE522 Assignment 3, Arizona State University, Spring/2015
+ This file shall NOT BE MODIFIED
+*********************************************************************/
+
+typedef long int uthread_t;
+typedef long int uthread_mutex_t;
 typedef struct tcb{
  int state;
 // jmp_buf context;
@@ -14,21 +30,20 @@ typedef struct tcb{
  void *ret_val;
  //some other information continues
 } tcb;
-/******************************************************************** 
- CSE522 Assignment 3, Arizona State University, Spring/2015
- This file shall NOT BE MODIFIED
-*********************************************************************/
-
-typedef long int uthread_t;
-typedef long int uthread_mutex_t;
 typedef struct threads{
  uthread_t tid;
  tcb th;
+ struct sigaction sa;
+ struct sigevent sev;
  ucontext_t *ucp;
+ struct itimerspec str;
+ timer_t timerid;
  struct threads *next;
  struct threads *prev;
 } threads;
-
+/*block holding thread information*/
+/* priority queue array*/
+threads *priority[100];
 /*
  Define resource table for stack-based priority ceiling protocol
 */
